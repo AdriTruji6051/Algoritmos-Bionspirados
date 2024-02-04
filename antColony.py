@@ -1,26 +1,26 @@
-import networkx as nx
-import matplotlib.pyplot as plt
 import random
 
+class Graph_Configuration:
+    def __init__(self):
+        self.start_node = "A"
+        self.objective_node = "L"
+        self.food_in_objective = 10000
+        self.pheromones = 10
+        self.evaporation_rate = 0.8
+        self.pheromonesEdgesMap = {}
+        self.imp_Pheromones = 0.5
+        self.imp_Node_Vis = 0.5
+        
 class Ant:
     def __init__(self, startGraph, id):
         self.path = [startGraph]
+        self.visited_path = {startGraph}
         self.id = id
     
-class Graph_Configuration:
-    def __init__(self, start_node, objective_node, food_in_objective, pheromones, evaporation_rate, imp_Pheromones, imp_Node_Vis):
-        self.start_node = start_node
-        self.objective_node = objective_node
-        self.food_in_objective = food_in_objective
-        self.pheromones = pheromones
-        self.evaporation_rate = evaporation_rate
-        self.pheromonesEdgesMap = {}
-        self.imp_Pheromones = imp_Pheromones
-        self.imp_Node_Vis = imp_Node_Vis
-
 class AntColony:
     def __init__(self, num_of_ants, graph, graph_configuration):
         self.global_best = 0
+        self.best_path = []
         self.ants = []
         self.graph = graph
         self.graph_configuration = graph_configuration
@@ -28,110 +28,146 @@ class AntColony:
         #Creando nuestras hormigas
         for h in range(num_of_ants):
             self.ants.append(Ant(graph_configuration.start_node, h))
-
-#Calculate the best next node 
-    def fitnessNode(self, possible_nodes, ant):
-        #return random.choice([n for n in possible_nodes if n not in ant.path])
-        edgeCoord = []
-        next_Node = None
-        bestProbablity = []
-        for n in range(len(possible_nodes)):
-            keys = ant.path[-1], possible_nodes[n]
-            edgeCoord.append(keys)
-        
-        for keys in edgeCoord:
-            edgePheromones = self.graph_configuration.pheromonesEdgesMap.get(keys)
-            if(edgePheromones != None):
-                next_Node = edgePheromones
-
-        return random.choice([n for n in possible_nodes if n not in ant.path])
-
             
+#HELP FUNCTIONS TO WORK WITH NETWORKX LIB
+    def getPossibleNodes(self, node):
+        nexts_nodes = list(self.graph.edges(node, data=True))
+        possible_nodes = []
 
-    def fitnessPath(self, ant):
-        self.graph_configuration.food_in_objective -= 1
-        evaporation_rate = self.graph_configuration.evaporation_rate
-        distance = 0
-
-        for f in range(len(ant.path) - 1):
-            key = ant.path[f], ant.path[f+1]
-            try:
-                graph_edges = self.graph.edges(ant.path[f], data=True)
-
-                #Total de distancia
-                for edge in graph_edges:
-                    distance += edge[2]['weight']
-
-                for edge in graph_edges:
-                    if(edge[1] == key[1]):
-                        #Calculamos cuantas pheromonas vamos a depositar en cada arco 
-                        pheromonesInEdge = self.graph_configuration.pheromonesEdgesMap.get(key)
-                        newPheromonesInEdge = (
-                            (1-evaporation_rate) * (pheromonesInEdge + (1/distance))
-                        )
-                        
-                        self.graph_configuration.pheromonesEdgesMap[key] = newPheromonesInEdge
-                        break
-                    #Hasta aqui llega
-            except:
-                pheromonesInEdge = (
-                    (1-evaporation_rate) * (1/distance)
-                )
-                self.graph_configuration.pheromonesEdgesMap[key] = pheromonesInEdge
-
-        #Devolvemos la hormiga al hormiguero
-          
-        ant.path = []
-        ant.path.append(graph_configuration.start_node)
-        
-def createGraph():
-    G = nx.Graph()
-    G.add_weighted_edges_from([
-        ["A","B", 0.5], 
-        ["B","C", 0.18],
-        ["C","D", 0.67],
-        ["D","F", 0.4],
-        ["A","F", 0.7]
-    ])
-
-    return G
-        
-if __name__ == "__main__":
-    start_node = "A"
-    objective_node = "F"
-    food_in_objective = 5 #Numero de veces que las hormigas deben llegar a este nodo
-    pheromones = 17
-    imp_Pheromones = 0.5
-    imp_Node_Vis = 0.5
-    evaporation_rate = 0.1
-    max_it_num = 100
-    iteration = 1
-    num_of_ants = 1
-    graph = createGraph()
-    graph_configuration = Graph_Configuration(start_node, objective_node, food_in_objective, 
-                                              pheromones, evaporation_rate, imp_Pheromones, imp_Node_Vis)
-
-    #Nuestro hormiguero y su grafo
-    ant_colony = AntColony(num_of_ants, graph, graph_configuration)
-
-    while(max_it_num >= iteration and ant_colony.graph_configuration.food_in_objective >= 1):
-        print("Chambeando.....")
-        for ant in ant_colony.ants:
-            actual_node = ant.path[-1]
-            nexts_nodes = list(ant_colony.graph.edges(actual_node, data=True))
-            possible_nodes = []
-
-            for n in range(len(nexts_nodes)):
+        for n in range(len(nexts_nodes)):
                 possible_nodes.append(nexts_nodes[n][1])
-
-            ant.path.append(ant_colony.fitnessNode(possible_nodes, ant))
-
-            if(ant.path[-1] == ant_colony.graph_configuration.objective_node):
-                print('Food finded')
-                ant_colony.fitnessPath(ant)
-        
-        iteration += 1
-
-    print(ant_colony.graph_configuration.pheromonesEdgesMap)
-        # print(graph_edges[1][2]['weight']) ---------- Pa sacar el peso
+        return possible_nodes
     
+    def getPossibleNodesExclPrev(self, node, prev_node):
+        nexts_nodes = list(self.graph.edges(node, data=True))
+        possible_nodes = []
+
+        for n in range(len(nexts_nodes)):
+            if nexts_nodes[n][1] != prev_node:
+                possible_nodes.append(nexts_nodes[n][1])
+        return possible_nodes   
+    
+    def getEdgePheromones(self, ori_node, dest_node):
+        key = ori_node, dest_node
+        if key in self.graph_configuration.pheromonesEdgesMap: return self.graph_configuration.pheromonesEdgesMap.get(key)
+        else: return self.graph_configuration.pheromones * 0.10
+    
+    def setEdgePheromones(self, ori_node, dest_node, new_Pherom):
+        key = ori_node, dest_node
+        if key in self.graph_configuration.pheromonesEdgesMap: self.graph_configuration.pheromonesEdgesMap[key] = new_Pherom
+        else:  self.graph_configuration.pheromonesEdgesMap.update({key: new_Pherom})
+    
+    def addEdgePheromones(self, ori_node, dest_node, new_Pherom):
+        key = ori_node, dest_node
+        if key in self.graph_configuration.pheromonesEdgesMap: self.graph_configuration.pheromonesEdgesMap[key] += new_Pherom
+        else:  self.graph_configuration.pheromonesEdgesMap.update({key: new_Pherom})
+    
+    def getEdgeWeight(self, ori_node, dest_node):
+        wheightDict = list(self.graph.edges(ori_node, data=True))
+        for data in wheightDict:
+            if data[1] == dest_node:
+                return data[2]['weight']
+            
+#MATH FUCNTIONS TO OUR COLONY    
+    def selectNode(self,nodes_probability):
+        totalSum = 0
+        probabilitys = []
+        actualProb = 0
+        
+        for nodeDistance in nodes_probability:
+            totalSum += nodeDistance[1]
+
+        for node in nodes_probability:
+            try:
+                actualProb += ( (node[1] * 100) / totalSum) / 100
+            except:
+                actualProb += 0
+            nodeProb = node[0], actualProb
+            probabilitys.append(nodeProb)
+            
+        spinNode = random.random()
+        
+        for prob in probabilitys:
+            if(prob[1] >= spinNode):
+                return prob[0]
+    
+    def calcProbNode(self, ant):
+        if len(ant.path) > 1:
+            possible_nodes = self.getPossibleNodesExclPrev(ant.path[-1], ant.path[-2])
+        else: possible_nodes = self.getPossibleNodes(ant.path[-1])
+        
+        nodes_probability = []
+        
+        for node in possible_nodes:
+            Tij = self.getEdgePheromones(ant.path[-1], node) / self.getEdgeWeight(ant.path[-1], node)
+            Nij = 1 / self.getEdgeWeight(ant.path[-1], node)
+            ij = ( (Tij ** self.graph_configuration.imp_Pheromones) * (Nij ** self.graph_configuration.imp_Node_Vis) )
+            ik = 1
+            
+            for knode in possible_nodes:   
+                if knode != node: 
+                    Nik = (1 / self.getEdgeWeight(ant.path[-1], knode)) * self.graph_configuration.pheromones
+                    Tik = (self.getEdgePheromones(ant.path[-1], knode) / self.getEdgeWeight(ant.path[-1], knode)) * self.graph_configuration.pheromones
+                    Ni = len(possible_nodes)
+                    ik +=  ( Ni * ( Tik ** self.graph_configuration.imp_Pheromones) * (Nik ** self.graph_configuration.imp_Node_Vis))
+            
+            nodes_probability.append([node, (ij / ik) * 10])    
+            
+        return self.selectNode(nodes_probability)
+    
+    def calcPheromones(self, ant):
+        distance = 0
+        for n in range(len(ant.path) - 1):
+            distance += self.getEdgeWeight(ant.path[n], ant.path[n+1])
+
+        pherom = (1/distance) * self.graph_configuration.pheromones
+        
+        #Guardamos el mejor resultado
+        if pherom > self.global_best:
+            self.best_path = ant.path
+            self.global_best = pherom
+        
+        return pherom
+
+#MAIN HELP FUNCTIONS  
+    def goToFitnessNode(self, ant):
+        next_node = self.calcProbNode(ant)
+        if next_node != None:
+            ant.path.append(next_node)
+    
+    def putPheromonesInEdges(self, ant):
+        pherom = self.calcPheromones(ant)
+        self.graph_configuration.food_in_objective -= 1
+        visited_edges = {}
+        
+        for n in range(len(ant.path) - 1):
+            infoEdge = ant.path[n], ant.path[n+1]
+            if infoEdge in visited_edges != True:
+                self.addEdgePheromones(ant.path[n], ant.path[n+1], pherom)
+
+        ant.path = []
+        ant.path.append(self.graph_configuration.start_node)
+        
+    def evaporatePheromones(self):
+        for data in self.graph_configuration.pheromonesEdgesMap.items():
+            evaporate_pherom = (1 * self.graph_configuration.evaporation_rate) * data[1]
+            self.setEdgePheromones(data[0][0], data[0][1], evaporate_pherom)
+           
+#OFICIAL MAIN FUNCTIONS   
+    def goToNextNode(self, ant):
+        if(ant.path[-1] == self.graph_configuration.objective_node):
+            self.putPheromonesInEdges(ant)
+        else:
+            self.goToFitnessNode(ant)
+    
+    def move_Ants(self):   
+        for ant in self.ants:
+            if self.graph_configuration.food_in_objective <= 0: break
+            self.goToNextNode(ant)
+            self.evaporatePheromones()
+            
+    def showStadisctics(self, iteration):
+        distance = 0
+        for n in range(len(self.best_path) - 1):
+            distance += self.getEdgeWeight(self.best_path[n], self.best_path[n+1])
+        print(f"\n---Estadiscticas de la ITERACION '{iteration}'\nMejor recorrido: {self.best_path} \nDistancia a objetivo: {distance}\nComida restante: {self.graph_configuration.food_in_objective}\n----------------------------------------------------------------------------------------------------------\n")
