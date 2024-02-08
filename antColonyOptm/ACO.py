@@ -19,17 +19,18 @@ def createGraph():
     return G
         
 if __name__ == "__main__":
-    max_it_num = 1000
+    max_it_num = 500
     iteration = 1
-    num_of_ants = 300
+    num_of_ants = 10
     
     graph = createGraph() 
     graph_configuration = Graph_Configuration()
     ant_colony = AntColony(num_of_ants, graph, graph_configuration)
     while(max_it_num >= iteration and ant_colony.graph_configuration.food_in_objective > 0):
         ant_colony.move_Ants()
-        if iteration % 50 == 0:
+        if iteration % 10 == 0:
             ant_colony.showStadisctics(iteration)
         iteration += 1
         
     ant_colony.showStadisctics(iteration)
+    ant_colony.showAntsPaths()

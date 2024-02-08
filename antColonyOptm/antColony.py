@@ -4,12 +4,12 @@ class Graph_Configuration:
     def __init__(self):
         self.start_node = "A"
         self.objective_node = "L"
-        self.food_in_objective = 10000
+        self.food_in_objective = 100000000
         self.pheromones = 10
-        self.evaporation_rate = 0.8
+        self.evaporation_rate = 1
         self.pheromonesEdgesMap = {}
         self.imp_Pheromones = 0.5
-        self.imp_Node_Vis = 0.5
+        self.imp_Node_Vis = 0.2
         
 class Ant:
     def __init__(self, startGraph, id):
@@ -61,12 +61,7 @@ class AntColony:
         key = ori_node, dest_node
         if key in self.graph_configuration.pheromonesEdgesMap: self.graph_configuration.pheromonesEdgesMap[key] += new_Pherom
         else:  self.graph_configuration.pheromonesEdgesMap.update({key: new_Pherom})
-    
-    def getEdgeWeight(self, ori_node, dest_node):
-        wheightDict = list(self.graph.edges(ori_node, data=True))
-        for data in wheightDict:
-            if data[1] == dest_node:
-                return data[2]['weight']
+
             
 #MATH FUCNTIONS TO OUR COLONY    
     def selectNode(self,nodes_probability):
@@ -99,26 +94,29 @@ class AntColony:
         nodes_probability = []
         
         for node in possible_nodes:
-            Tij = self.getEdgePheromones(ant.path[-1], node) / self.getEdgeWeight(ant.path[-1], node)
-            Nij = 1 / self.getEdgeWeight(ant.path[-1], node)
+            Tij = self.getEdgePheromones(ant.path[-1], node) / self.graph.edges[ant.path[-1],node]['weight']
+            Nij = 1 / self.graph.edges[ant.path[-1],node]['weight']
             ij = ( (Tij ** self.graph_configuration.imp_Pheromones) * (Nij ** self.graph_configuration.imp_Node_Vis) )
             ik = 1
             
             for knode in possible_nodes:   
                 if knode != node: 
-                    Nik = (1 / self.getEdgeWeight(ant.path[-1], knode)) * self.graph_configuration.pheromones
-                    Tik = (self.getEdgePheromones(ant.path[-1], knode) / self.getEdgeWeight(ant.path[-1], knode)) * self.graph_configuration.pheromones
+                    Nik = (1 / self.graph.edges[ant.path[-1],knode]['weight']) * self.graph_configuration.pheromones
+                    Tik = (self.getEdgePheromones(ant.path[-1], knode) / self.graph.edges[ant.path[-1],knode]['weight']) * self.graph_configuration.pheromones
                     Ni = len(possible_nodes)
                     ik +=  ( Ni * ( Tik ** self.graph_configuration.imp_Pheromones) * (Nik ** self.graph_configuration.imp_Node_Vis))
-            
-            nodes_probability.append([node, (ij / ik) * 10])    
+
+            #Bajamos la probabilidad de ir al nodo si ya lo visito
+            visited = ant.path.count(node)
+            if visited == 0: visited = 1
+            nodes_probability.append([node, ((ij / ik) * 10) / visited])    
             
         return self.selectNode(nodes_probability)
     
     def calcPheromones(self, ant):
         distance = 0
         for n in range(len(ant.path) - 1):
-            distance += self.getEdgeWeight(ant.path[n], ant.path[n+1])
+            distance += self.graph.edges[ant.path[n],ant.path[n+1]]['weight']
 
         pherom = (1/distance) * self.graph_configuration.pheromones
         
@@ -169,5 +167,9 @@ class AntColony:
     def showStadisctics(self, iteration):
         distance = 0
         for n in range(len(self.best_path) - 1):
-            distance += self.getEdgeWeight(self.best_path[n], self.best_path[n+1])
+            distance += self.graph.edges[self.best_path[n], self.best_path[n+1]]['weight']
         print(f"\n---Estadiscticas de la ITERACION '{iteration}'\nMejor recorrido: {self.best_path} \nDistancia a objetivo: {distance}\nComida restante: {self.graph_configuration.food_in_objective}\n----------------------------------------------------------------------------------------------------------\n")
+
+    def showAntsPaths(self):
+        for ant in self.ants:
+            print(f"Ant {ant.id}: {ant.path}")
