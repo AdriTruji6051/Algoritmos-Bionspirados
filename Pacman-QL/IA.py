@@ -3,7 +3,7 @@ import time
 
 DataPath = "Assets/Data/"
 def recordMovements(key):
-    file = open(DataPath + "Movements.txt", "a")
+    file = open(DataPath + "Movements.txt")
     file.write(key)
     file.close()
     

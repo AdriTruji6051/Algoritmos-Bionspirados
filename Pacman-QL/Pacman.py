@@ -1,4 +1,5 @@
 import pygame
+import AI
 import math
 from random import randrange
 import random
@@ -61,7 +62,7 @@ originalGameBoard = [
 ]
 gameBoard = copy.deepcopy(originalGameBoard)
 spriteRatio = 3/2
-square = 25 # Size of each unit square
+square = 18 # Size of each unit square
 spriteOffset = square * (1 - spriteRatio) * (1/2)
 (width, height) = (len(gameBoard[0]) * square, len(gameBoard) * square) # Game screen
 screen = pygame.display.set_mode((width, height))
@@ -124,8 +125,8 @@ class Game:
 
     # Driver method: The games primary update method
     def update(self):
-        # pygame.image.unload()
-        print(self.ghostStates)
+        #pygame.image.unload()
+        #print(self.ghostStates)
         recordGhostMovements(self.ghostStates)
         if self.gameOver:
             self.gameOverFunc()
@@ -186,12 +187,14 @@ class Game:
             #Changes the color of special Tic-Taks
             self.flipColor()
             self.tictakChangeCount = 0
+        #print(gameBoard[int(math.ceil(self.pacman.row))])
 
         if self.pacmanUpdateCount == self.pacmanUpdateDelay:
             self.pacmanUpdateCount = 0
             self.pacman.update()
             self.pacman.col %= len(gameBoard[0])
             if self.pacman.row % 1.0 == 0 and self.pacman.col % 1.0 == 0:
+                prueba = AI.IA(gameBoard, [int(math.ceil( self.pacman.row)), int(math.ceil(self.pacman.col))], [])
                 if gameBoard[int(self.pacman.row)][int(self.pacman.col)] == 2:
                     self.playMusic("munch_1.wav")
                     gameBoard[int(self.pacman.row)][int(self.pacman.col)] = 1
@@ -212,6 +215,8 @@ class Game:
                         ghost.setAttacked(True)
                         ghost.setTarget()
                         self.ghostsAttacked = True
+                prueba.sigue_camino()
+
         self.checkSurroundings()
         self.highScore = max(self.score, self.highScore)
 
@@ -317,17 +322,17 @@ class Game:
         musicPlaying = 1
 
     def clearBoard(self):
-            # Draw tiles around ghosts and pacman
-            for ghost in self.ghosts:
-                self.drawTilesAround(ghost.row, ghost.col)
-            self.drawTilesAround(self.pacman.row, self.pacman.col)
-            self.drawTilesAround(self.berryLocation[0], self.berryLocation[1])
-            # Clears Ready! Label
-            self.drawTilesAround(20, 10)
-            self.drawTilesAround(20, 11)
-            self.drawTilesAround(20, 12)
-            self.drawTilesAround(20, 13)
-            self.drawTilesAround(20, 14)
+        # Draw tiles around ghosts and pacman
+        for ghost in self.ghosts:
+            self.drawTilesAround(ghost.row, ghost.col)
+        self.drawTilesAround(self.pacman.row, self.pacman.col)
+        self.drawTilesAround(self.berryLocation[0], self.berryLocation[1])
+        # Clears Ready! Label
+        self.drawTilesAround(20, 10)
+        self.drawTilesAround(20, 11)
+        self.drawTilesAround(20, 12)
+        self.drawTilesAround(20, 13)
+        self.drawTilesAround(20, 14)
 
     def checkSurroundings(self):
         # Check if pacman got killed
@@ -658,7 +663,7 @@ class Ghost:
         self.deathCount = 0
 
     def update(self):
-        # print(self.row, self.col)
+        #print(self.row, self.col)
         if self.target == [-1, -1] or (self.row == self.target[0] and self.col == self.target[1]) or gameBoard[int(self.row)][int(self.col)] == 4 or self.dead:
             self.setTarget()
         self.setDir()
@@ -830,7 +835,7 @@ class Ghost:
                 break
 
     def move(self):
-        # print(self.target)
+        #print(self.target)
         self.lastLoc = [self.row, self.col]
         if self.dir == 0:
             self.row -= self.ghostSpeed
@@ -980,7 +985,7 @@ def pause(time):
         cur += 1
 
 while running:
-    clock.tick(10)
+    clock.tick(30)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
