@@ -3,8 +3,8 @@ import time
 
 class IA:
     def __init__(self, gameboard, pos_pacman, pos_ghost) :
-        self.tablero = self.cuadro_alrededor_pacman(gameboard, pos_pacman)
-        self.pos_inical = [2, 2]
+        self.tablero = gameboard
+        self.pos_inical = pos_pacman
 
     def cuadro_alrededor_pacman(self, tablero_completo, posicio_pacman) :
         cuadro = []
@@ -25,30 +25,32 @@ class IA:
     def sigue_camino(self) :   
         row = self.pos_inical[0]
         col = self.pos_inical[1]
-        vecino = 1
+        vecinoAB = 0
+        vecinoID = 0
         while True :
-            if self.tablero[row][col-vecino] == 2:
-                time.sleep(0)
-                keyboard.press('A')
-                print('A')
+            print(vecinoID)
+            if self.tablero[row][col-vecinoID] == 2:
+                keyboard.press('a')
+                time.sleep(0.1)
+                keyboard.release('a')
                 break
-            elif self.tablero[row][col+vecino] == 2:
-                time.sleep(0)
-                keyboard.press('D')
-                print('D')
+            elif self.tablero[row][col+vecinoID] == 2:
+                keyboard.press('d')
+                time.sleep(0.1)
+                keyboard.release('d')
                 break
-            elif self.tablero[row-vecino][col] == 2:
-                time.sleep(0)
-                keyboard.press('S')
-                print('S')
+            elif self.tablero[row-vecinoAB][col] == 2:
+                keyboard.press('w')
+                time.sleep(0.1)
+                keyboard.release('w')
                 break
-            elif self.tablero[row+vecino][col] == 2:
-                time.sleep(0)
-                keyboard.press('W')
-                print('W')
-                vecino = 1
+            elif self.tablero[row+vecinoAB][col] == 2:
+                keyboard.press('s')
+                time.sleep(0.1)
+                keyboard.release('s')
                 break
             else :
-                vecino += 1
-            if vecino == 2 :
-                break
+                if row > 3 and row < len(self.tablero): 
+                    vecinoAB += 1
+                if col > 0 and col < len(self.tablero[0]) - 2:
+                    vecinoID += 1
