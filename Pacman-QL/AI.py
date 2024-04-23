@@ -19,7 +19,7 @@ class IA:
 
     def imprimir_tablero(self) :
         for i in self.tablero :
-            print(i)
+            print(str(i) + ',')
         print('\n')
     
     def sigue_camino(self) :   
@@ -29,6 +29,7 @@ class IA:
         vecinoID = 0
         while True :
             print(vecinoID)
+            #self.imprimir_tablero()
             if self.tablero[row][col-vecinoID] == 2:
                 keyboard.press('a')
                 time.sleep(0.1)
