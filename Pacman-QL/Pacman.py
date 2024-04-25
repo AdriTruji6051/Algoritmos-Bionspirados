@@ -194,7 +194,7 @@ class Game:
             self.pacman.update()
             self.pacman.col %= len(gameBoard[0])
             if self.pacman.row % 1.0 == 0 and self.pacman.col % 1.0 == 0:
-                prueba = AI.IA(gameBoard, [int(math.ceil( self.pacman.row)), int(math.ceil(self.pacman.col))], [])
+                prueba = AI.IA(gameBoard, [int(self.pacman.row), int(self.pacman.col)], [])
                 if gameBoard[int(self.pacman.row)][int(self.pacman.col)] == 2:
                     self.playMusic("munch_1.wav")
                     gameBoard[int(self.pacman.row)][int(self.pacman.col)] = 1
