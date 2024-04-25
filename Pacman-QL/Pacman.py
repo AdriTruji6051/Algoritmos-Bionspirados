@@ -127,7 +127,7 @@ class Game:
     def update(self):
         #pygame.image.unload()
         #print(self.ghostStates)
-        recordGhostMovements(self.ghostStates)
+        #recordGhostMovements(self.ghosts)
         if self.gameOver:
             self.gameOverFunc()
             return
@@ -195,6 +195,12 @@ class Game:
             self.pacman.col %= len(gameBoard[0])
             if self.pacman.row % 1.0 == 0 and self.pacman.col % 1.0 == 0:
                 prueba = AI.IA(gameBoard, [int(self.pacman.row), int(self.pacman.col)], [])
+                #TRABAJANDO CON LA IA AJUAAAAAAAAAA                
+                #prueba = AI.IA(gameBoard, [int(math.ceil( self.pacman.row)), int(math.ceil(self.pacman.col))], [])
+                ghostsPositions = ''
+                for ghost in self.ghosts:
+                    ghostsPositions += str(ghost.row) + ' ' + str(ghost.col) + ' ' + str(ghost.color)
+                print(ghostsPositions, 'Pacman:', self.pacman.row, self.pacman.col)
                 if gameBoard[int(self.pacman.row)][int(self.pacman.col)] == 2:
                     self.playMusic("munch_1.wav")
                     gameBoard[int(self.pacman.row)][int(self.pacman.col)] = 1
@@ -985,7 +991,7 @@ def pause(time):
         cur += 1
 
 while running:
-    clock.tick(30)
+    clock.tick(5)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False

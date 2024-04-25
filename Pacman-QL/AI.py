@@ -16,7 +16,7 @@ class IA:
 
     def imprimir_tablero(self) :
         for i in self.tablero :
-            print(i)
+            print(str(i) + ',')
         print('\n')
     
     def astar(grid, start, goal):
