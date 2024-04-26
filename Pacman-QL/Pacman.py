@@ -200,7 +200,7 @@ class Game:
                 ghostsPositions = ''
                 for ghost in self.ghosts:
                     ghostsPositions += str(ghost.row) + ' ' + str(ghost.col) + ' ' + str(ghost.color)
-                print(ghostsPositions, 'Pacman:', self.pacman.row, self.pacman.col)
+                #print(ghostsPositions, 'Pacman:', self.pacman.row, self.pacman.col)
                 if gameBoard[int(self.pacman.row)][int(self.pacman.col)] == 2:
                     self.playMusic("munch_1.wav")
                     gameBoard[int(self.pacman.row)][int(self.pacman.col)] = 1
