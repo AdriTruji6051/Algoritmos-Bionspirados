@@ -10,9 +10,11 @@ class Node:
         
 
 class IA:
-    def __init__(self, gameboard, pos_pacman, pos_ghost) :
+    def __init__(self, gameboard, pos_pacman, pos_ghost, tec=None, path=None) :
         self.tablero = gameboard
         self.pos_inical = pos_pacman
+        self.teclas = tec
+        self.path = path
 
     def imprimir_tablero(self) :
         for i in self.tablero :
@@ -32,7 +34,6 @@ class IA:
             indice = 0
             for numero, nodo, in enumerate(lista_abierta) :
                 if nodo.f < nodo_actual.f :
-                    print(nodo.position)
                     nodo_actual = nodo
                     indice = numero
         
@@ -89,48 +90,62 @@ class IA:
                 lista_abierta.append(vecino)
                             
         return None
-
-    def sigue_camino(self) :
-        row = self.pos_inical[0]
-        col = self.pos_inical[1]
-        vecinoID = 0
-        vecinoAB = 0
-        while True :
-            
-            vecinoAB += 1
-            if not row - vecinoAB > 4 and row + vecinoAB < len(self.tablero) - 4: 
-                vecinoAB -= 1
-                continue
-            vecinoID += 1
-            if not col - vecinoID > 0 and col + vecinoID < len(self.tablero[0]) - 1:
-                vecinoID -= 1
-                continue 
-
-            if self.tablero[row][col-vecinoID] in [2, 5, 6]:
-                index, teclas = self.a_star( [row, col], [row, col-vecinoID] )
-                print(teclas)
-                break
-            elif self.tablero[row][col+vecinoID] in [2, 5, 6]:
-                index, teclas = self.a_star( [row, col], [row, col+vecinoID] )
-                print(teclas)
-                break
-            elif self.tablero[row-vecinoAB][col] in [2, 5, 6]:
-                index, teclas = self.a_star( [row, col], [row - vecinoAB, col] )
-                print(teclas)
-                break
-            elif self.tablero[row+vecinoAB][col] in [2, 5, 6]:
-                index, teclas = self.a_star( [row, col], [row + vecinoAB, col] )
-                print(teclas)
-                break
-            else :
-                vecinoAB += 1
-                if not row - vecinoAB > 4 and row + vecinoAB < len(self.tablero) - 4: 
-                    vecinoAB -= 1
-                    continue
-                vecinoID += 1
-                if not col - vecinoID > 0 and col + vecinoID < len(self.tablero[0]) - 1:
-                    vecinoID -= 1
-                    continue 
+                
+    def recorrer_tablero(self) :
+        row, col = self.pos_inical
+        tecla = []
+        i = j = 0
+        
+        if self.teclas == None :
+            while i < len(self.tablero) - 1:
+                
+                while j < len(self.tablero[0]) - 1:
+                    if j == col and i == row:
+                        if self.tablero[i][j+1] in [2, 6, 5]:
+                            r, tecla = self.a_star([row, col], [i, j+1])
+                            #print(tecla)
+                        elif self.tablero[i][j-1] in [2, 6, 5]:
+                            r, tecla = self.a_star([row, col], [i, j-1])
+                            #print(tecla)
+                        elif self.tablero[i-1][j] in [2, 6, 5]:
+                            r, tecla = self.a_star([row, col], [i-1, j])
+                            #print(tecla)
+                        elif self.tablero[i+1][j] in [2, 6, 5]:
+                            r, tecla = self.a_star([row, col], [i+1, j])
+                            #print(tecla)
+                            
+                        if tecla != [] :
+                            keyboard.press(tecla[0])
+                            keyboard.release(tecla[0])
+                    j += 1
+                    
+                i += 1
+                j = 0
+                if self.tablero[row][col-1] in [1, 3] and self.tablero[row][col+1] in [1, 3] and self.tablero[row-1][col] in [1, 3] and self.tablero[row+1][col] in [1, 3]:
+                    ultimo_punto = []
+                    for x in range(len(self.tablero)) :
+                        for z in range(len(self.tablero[0])) :
+                            if self.tablero[x][z] == 2 :
+                                if x != self.pos_inical[0] and z != self.pos_inical[1]:
+                                    ultimo_punto.append([x, z])
+                                
+                    self.path, self.teclas = self.a_star([row, col], ultimo_punto[len(ultimo_punto) - 1])
+                    print(self.path, self.teclas)
+                    del self.path[0]
+                    del self.teclas[0]
+                    return self.path, self.teclas                 
+                    
+            return None, None
+        
+        if self.path[0][0] == self.pos_inical[0] and self.path[0][1] == self.pos_inical[1] :
+            keyboard.press(self.teclas[0])
+            keyboard.release(self.teclas[0])
+            del self.path[0]
+            del self.teclas[0]
+        if self.path == [] or self.teclas == [] :
+            return None, None
+        
+        return self.path, self.teclas
         
 
 

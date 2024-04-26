@@ -80,6 +80,10 @@ PLAYING_KEYS = {
 
 class Game:
     def __init__(self, level, score):
+        #Variables temporales para la IA del pacman(No interfieren con el funcionamiento del juego)
+        self.path = None
+        self.teclas = None
+        #-------------------------------------------------------------------------------------------------
         self.paused = True
         self.ghostUpdateDelay = 1
         self.ghostUpdateCount = 0
@@ -125,6 +129,7 @@ class Game:
 
     # Driver method: The games primary update method
     def update(self):
+        incio = AI.IA(gameBoard, [int(self.pacman.row), int(self.pacman.col)], [])
         #pygame.image.unload()
         #print(self.ghostStates)
         #recordGhostMovements(self.ghosts)
@@ -194,12 +199,17 @@ class Game:
             self.pacman.update()
             self.pacman.col %= len(gameBoard[0])
             if self.pacman.row % 1.0 == 0 and self.pacman.col % 1.0 == 0:
-                prueba = AI.IA(gameBoard, [int(self.pacman.row), int(self.pacman.col)], [])
+                if self.path == None : 
+                    prueba = AI.IA(gameBoard, [int(self.pacman.row), int(self.pacman.col)], [])
+                    self.path, self.teclas = prueba.recorrer_tablero()
+                else :
+                    recorrido_2 = AI.IA(gameBoard, [int(self.pacman.row), int(self.pacman.col)], [], self.teclas, self.path)
+                    self.path, self.teclas = recorrido_2.recorrer_tablero()
                 #TRABAJANDO CON LA IA AJUAAAAAAAAAA                
                 #prueba = AI.IA(gameBoard, [int(math.ceil( self.pacman.row)), int(math.ceil(self.pacman.col))], [])
                 ghostsPositions = ''
-                for ghost in self.ghosts:
-                    ghostsPositions += str(ghost.row) + ' ' + str(ghost.col) + ' ' + str(ghost.color)
+                #for ghost in self.ghosts:
+                    #ghostsPositions += str(ghost.row) + ' ' + str(ghost.col) + ' ' + str(ghost.color)
                 #print(ghostsPositions, 'Pacman:', self.pacman.row, self.pacman.col)
                 if gameBoard[int(self.pacman.row)][int(self.pacman.col)] == 2:
                     self.playMusic("munch_1.wav")
@@ -221,7 +231,6 @@ class Game:
                         ghost.setAttacked(True)
                         ghost.setTarget()
                         self.ghostsAttacked = True
-                prueba.sigue_camino()
 
         self.checkSurroundings()
         self.highScore = max(self.score, self.highScore)
@@ -275,6 +284,9 @@ class Game:
             ghost.draw()
         self.pacman.draw()
         # Updates the screen
+        inicio = AI.IA(gameBoard, [int(self.pacman.row), int(self.pacman.col)], [])
+        inicio.recorrer_tablero()
+        print("puta_inicio")
         pygame.display.update()
 
 
@@ -894,6 +906,7 @@ def reset():
     game.paused = True
     game.render()
 
+
 def displayLaunchScreen():
     # Draw Pacman Title
     pacmanTitle = ["tile016.png", "tile000.png", "tile448.png", "tile012.png", "tile000.png", "tile013.png"]
@@ -991,7 +1004,7 @@ def pause(time):
         cur += 1
 
 while running:
-    clock.tick(5)
+    clock.tick(30)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -1012,7 +1025,6 @@ while running:
                 if not onLaunchScreen:
                     game.pacman.newDir = 3
             elif event.key == pygame.K_SPACE:
-                if onLaunchScreen:
                     onLaunchScreen = False
                     game.paused = True
                     game.started = False
@@ -1024,5 +1036,5 @@ while running:
                 running = False
                 game.recordHighScore()
 
-    if not onLaunchScreen:
+    if not onLaunchScreen:        
         game.update()
