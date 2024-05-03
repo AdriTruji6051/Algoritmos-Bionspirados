@@ -284,9 +284,9 @@ class Game:
             ghost.draw()
         self.pacman.draw()
         # Updates the screen
+        self.path = self.teclas = None
         inicio = AI.IA(gameBoard, [int(self.pacman.row), int(self.pacman.col)], [])
-        inicio.recorrer_tablero()
-        print("puta_inicio")
+        self.path, self.teclas = inicio.recorrer_tablero()
         pygame.display.update()
 
 
@@ -1004,7 +1004,7 @@ def pause(time):
         cur += 1
 
 while running:
-    clock.tick(30)
+    clock.tick(300)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False

@@ -93,7 +93,7 @@ class IA:
                 
     def recorrer_tablero(self) :
         row, col = self.pos_inical
-        tecla = []
+        tecla = ""
         i = j = 0
         
         if self.teclas == None :
@@ -102,21 +102,21 @@ class IA:
                 while j < len(self.tablero[0]) - 1:
                     if j == col and i == row:
                         if self.tablero[i][j+1] in [2, 6, 5]:
-                            r, tecla = self.a_star([row, col], [i, j+1])
+                            tecla = "d"
                             #print(tecla)
                         elif self.tablero[i][j-1] in [2, 6, 5]:
-                            r, tecla = self.a_star([row, col], [i, j-1])
+                            tecla = "a"
                             #print(tecla)
                         elif self.tablero[i-1][j] in [2, 6, 5]:
-                            r, tecla = self.a_star([row, col], [i-1, j])
+                            tecla = "w"
                             #print(tecla)
                         elif self.tablero[i+1][j] in [2, 6, 5]:
-                            r, tecla = self.a_star([row, col], [i+1, j])
+                            tecla = "s"
                             #print(tecla)
                             
-                        if tecla != [] :
-                            keyboard.press(tecla[0])
-                            keyboard.release(tecla[0])
+                        if tecla != "" :
+                            keyboard.press(tecla)
+                            keyboard.release(tecla)
                     j += 1
                     
                 i += 1
@@ -131,21 +131,23 @@ class IA:
                                 
                     self.path, self.teclas = self.a_star([row, col], ultimo_punto[len(ultimo_punto) - 1])
                     print(self.path, self.teclas)
-                    del self.path[0]
-                    del self.teclas[0]
                     return self.path, self.teclas                 
                     
             return None, None
         
-        if self.path[0][0] == self.pos_inical[0] and self.path[0][1] == self.pos_inical[1] :
-            keyboard.press(self.teclas[0])
-            keyboard.release(self.teclas[0])
-            del self.path[0]
-            del self.teclas[0]
+        for i in range(2) :
+            if self.path[i][0] == self.pos_inical[0] and self.path[i][1] == self.pos_inical[1] :
+                keyboard.press(self.teclas[i])
+                keyboard.release(self.teclas[i])
+                r = i
+                while r >= 0 :
+                    del self.path[r]
+                    del self.teclas[r]
+                    r -= 1
+                break
+                    
         if self.path == [] or self.teclas == [] :
             return None, None
         
         return self.path, self.teclas
         
-
-

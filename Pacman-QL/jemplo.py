@@ -84,6 +84,24 @@ class Astar:
                 lista_abierta.append(vecino)
                             
         return None
+
+"""if i == 1 :
+    if self.pos_inical[0] == self.path[0][0] - 1 :
+        keyboard.press("s")
+        keyboard.release("s")
+        bandera = True
+    elif self.pos_inical[1] == self.path[0][1] - 1 :
+        keyboard.press("d")
+        keyboard.release("d")
+        bandera = True
+    elif self.pos_inical[1] == self.path[0][1] + 1 :
+        keyboard.press("a")
+        keyboard.release("a")
+        bandera = True
+    elif self.pos_inical[0] == self.path[0][0] + 1 :
+        keyboard.press("w")
+        keyboard.release("w")
+        bandera = True"""
     
 grid = [
     [3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3],
